@@ -1,4 +1,7 @@
-import type { JsonHtmlTheme, JsonHtmlThemeName, JsonHtmlThemeOverrides } from './types';
+import { escapeHtml } from './escape';
+import type { JsonHtmlStyleOptions, JsonHtmlTheme, JsonHtmlThemeName, JsonHtmlThemeOverrides } from './types';
+
+const DEFAULT_SCOPE_CLASS = 'jhk';
 
 export const themes: Record<JsonHtmlThemeName, JsonHtmlTheme> = {
   clean: {
@@ -64,7 +67,17 @@ export const themes: Record<JsonHtmlThemeName, JsonHtmlTheme> = {
 };
 
 export function getThemePreset(theme: JsonHtmlThemeName | JsonHtmlTheme = 'clean'): JsonHtmlTheme {
-  return typeof theme === 'string' ? themes[theme] : theme;
+  if (typeof theme !== 'string') {
+    return theme;
+  }
+
+  const preset = themes[theme];
+
+  if (!preset) {
+    throw new Error(`Unknown json-html-kit theme "${theme}".`);
+  }
+
+  return preset;
 }
 
 export function createTheme(
@@ -78,7 +91,9 @@ export function createTheme(
   };
 }
 
-export function getThemeCss(theme: JsonHtmlThemeName | JsonHtmlTheme = 'clean', scopeClass = 'jhk'): string {
+export function getThemeCss(theme: JsonHtmlThemeName | JsonHtmlTheme = 'clean', scopeClass = DEFAULT_SCOPE_CLASS): string {
+  assertValidScopeClass(scopeClass);
+
   const preset = getThemePreset(theme);
   const scope = `.${scopeClass}`;
 
@@ -165,4 +180,33 @@ ${scope} .jhk-nested {
   padding: 0 10px 10px;
 }
 `.trim();
+}
+
+export function getThemeStyleTag(theme: JsonHtmlThemeName | JsonHtmlTheme = 'clean', scopeClass = DEFAULT_SCOPE_CLASS): string {
+  return `<style>${getThemeCss(theme, scopeClass)}</style>`;
+}
+
+export function injectThemeCss(target: Document | Element, options: JsonHtmlStyleOptions = {}): HTMLStyleElement {
+  const scopeClass = options.scopeClass ?? DEFAULT_SCOPE_CLASS;
+  assertValidScopeClass(scopeClass);
+
+  const doc = 'head' in target ? target : target.ownerDocument;
+  const styleId = options.styleId ?? `json-html-kit-${scopeClass}`;
+  let style = doc.getElementById(styleId) as HTMLStyleElement | null;
+
+  if (!style) {
+    style = doc.createElement('style');
+    style.id = styleId;
+    style.dataset.jsonHtmlKit = scopeClass;
+    doc.head.append(style);
+  }
+
+  style.textContent = getThemeCss(options.theme, scopeClass);
+  return style;
+}
+
+function assertValidScopeClass(scopeClass: string): void {
+  if (!/^[_a-zA-Z][_a-zA-Z0-9-]*$/.test(scopeClass)) {
+    throw new Error(`Invalid json-html-kit scope class "${escapeHtml(scopeClass)}". Use a single CSS class name.`);
+  }
 }

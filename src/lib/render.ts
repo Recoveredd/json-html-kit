@@ -1,9 +1,13 @@
 import { escapeHtml, safeText } from './escape';
-import { getThemeCss, getThemePreset } from './themes';
+import { getThemePreset, getThemeStyleTag, injectThemeCss } from './themes';
 import type { JsonHtmlRenderer, JsonHtmlRenderOptions, JsonValue } from './types';
 
-const DEFAULT_OPTIONS: Required<Omit<JsonHtmlRenderOptions, 'className' | 'theme'>> = {
-  includeThemeCss: false,
+type ResolvedRenderOptions = Required<Omit<JsonHtmlRenderOptions, 'className' | 'theme' | 'styleId' | 'includeThemeCss' | 'includeStyles'>> & {
+  includeStyles: boolean;
+};
+
+const DEFAULT_OPTIONS: ResolvedRenderOptions = {
+  includeStyles: false,
   scopeClass: 'jhk',
   tableMode: 'auto',
   collapseDepth: 2,
@@ -14,7 +18,7 @@ const DEFAULT_OPTIONS: Required<Omit<JsonHtmlRenderOptions, 'className' | 'theme
 };
 
 export function renderJsonToHtml(value: unknown, options: JsonHtmlRenderOptions = {}): string {
-  const settings = { ...DEFAULT_OPTIONS, ...options };
+  const settings = resolveRenderOptions(options);
   const theme = getThemePreset(options.theme);
   const classes = [
     settings.scopeClass,
@@ -23,15 +27,28 @@ export function renderJsonToHtml(value: unknown, options: JsonHtmlRenderOptions 
   ].filter(Boolean).join(' ');
 
   const body = renderValue(toJsonValue(value), settings, 0, 'root');
-  const style = settings.includeThemeCss ? `<style>${getThemeCss(theme, settings.scopeClass)}</style>` : '';
+  const style = settings.includeStyles ? getThemeStyleTag(theme, settings.scopeClass) : '';
 
   return `${style}<div class="${escapeHtml(classes)}"><div class="jhk-root">${body}</div></div>`;
 }
 
 export function renderJsonToElement(value: unknown, element: Element, options: JsonHtmlRenderOptions = {}): void {
+  const includeStyles = options.includeStyles ?? options.includeThemeCss ?? true;
+  const settings = resolveRenderOptions({ ...options, includeStyles });
+  const theme = getThemePreset(options.theme);
+
+  if (settings.includeStyles) {
+    injectThemeCss(element.ownerDocument, {
+      theme,
+      scopeClass: settings.scopeClass,
+      styleId: options.styleId
+    });
+  }
+
   element.innerHTML = renderJsonToHtml(value, {
-    includeThemeCss: true,
-    ...options
+    ...options,
+    includeStyles: false,
+    includeThemeCss: false
   });
 }
 
@@ -46,9 +63,17 @@ export function createJsonHtmlRenderer(defaultOptions: JsonHtmlRenderOptions = {
   };
 }
 
+function resolveRenderOptions(options: JsonHtmlRenderOptions): ResolvedRenderOptions {
+  return {
+    ...DEFAULT_OPTIONS,
+    ...options,
+    includeStyles: options.includeStyles ?? options.includeThemeCss ?? DEFAULT_OPTIONS.includeStyles
+  };
+}
+
 function renderValue(
   value: JsonValue,
-  options: Required<Omit<JsonHtmlRenderOptions, 'className' | 'theme'>>,
+  options: ResolvedRenderOptions,
   depth: number,
   label: string
 ): string {
@@ -74,7 +99,7 @@ function renderValue(
 
 function renderArray(
   values: JsonValue[],
-  options: Required<Omit<JsonHtmlRenderOptions, 'className' | 'theme'>>,
+  options: ResolvedRenderOptions,
   depth: number,
   label: string
 ): string {
@@ -98,7 +123,7 @@ function renderArray(
 
 function renderObject(
   value: Record<string, JsonValue>,
-  options: Required<Omit<JsonHtmlRenderOptions, 'className' | 'theme'>>,
+  options: ResolvedRenderOptions,
   depth: number,
   label: string
 ): string {
@@ -121,7 +146,7 @@ function renderObject(
 
 function renderArrayTable(
   rows: Array<Record<string, JsonValue>>,
-  options: Required<Omit<JsonHtmlRenderOptions, 'className' | 'theme'>>,
+  options: ResolvedRenderOptions,
   depth: number
 ): string {
   const headers = collectHeaders(rows, options.sortKeys);
@@ -141,7 +166,7 @@ function renderArrayTable(
 function wrapNested(
   summary: string,
   content: string,
-  options: Required<Omit<JsonHtmlRenderOptions, 'className' | 'theme'>>,
+  options: ResolvedRenderOptions,
   depth: number
 ): string {
   const open = depth < options.collapseDepth ? ' open' : '';

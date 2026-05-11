@@ -24,11 +24,19 @@ export type JsonHtmlThemeOverrides = Partial<Omit<JsonHtmlTheme, 'name'>> & {
   name?: string;
 };
 
-export interface JsonHtmlRenderOptions {
-  className?: string;
+export interface JsonHtmlStyleOptions {
   theme?: JsonHtmlThemeName | JsonHtmlTheme;
-  includeThemeCss?: boolean;
   scopeClass?: string;
+  styleId?: string;
+}
+
+export interface JsonHtmlRenderOptions extends JsonHtmlStyleOptions {
+  className?: string;
+  includeStyles?: boolean;
+  /**
+   * @deprecated Use `includeStyles` instead.
+   */
+  includeThemeCss?: boolean;
   tableMode?: JsonHtmlTableMode;
   collapseDepth?: number;
   maxDepth?: number;

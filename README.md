@@ -23,8 +23,10 @@ npm install json-html-kit
 
 ## Usage
 
+Render a standalone HTML fragment with styles included:
+
 ```ts
-import { getThemeCss, renderJsonToHtml } from 'json-html-kit';
+import { renderJsonToHtml } from 'json-html-kit';
 
 const report = {
   customer: 'Ada',
@@ -34,10 +36,24 @@ const report = {
   ]
 };
 
-const html = `
-  <style>${getThemeCss('clean')}</style>
-  ${renderJsonToHtml(report)}
-`;
+const html = renderJsonToHtml(report, {
+  theme: 'clean',
+  includeStyles: true
+});
+```
+
+Render into an existing page:
+
+```ts
+import { renderJsonToElement } from 'json-html-kit';
+
+const container = document.querySelector('#report');
+
+if (container) {
+  renderJsonToElement(report, container, {
+    theme: 'clean'
+  });
+}
 ```
 
 ## API
@@ -52,13 +68,13 @@ renderJsonToHtml(data, {
   tableMode: 'auto',
   collapseDepth: 2,
   sortKeys: true,
-  includeThemeCss: true
+  includeStyles: true
 });
 ```
 
 ### `renderJsonToElement(value, element, options?)`
 
-Renders directly into a DOM element.
+Renders directly into a DOM element and injects the selected theme CSS into the document once by default. Pass `includeStyles: false` if your app already loads the theme CSS.
 
 ### `createJsonHtmlRenderer(defaultOptions?)`
 
@@ -68,6 +84,14 @@ Creates a renderer with shared defaults.
 
 Returns scoped CSS for one of the built-in themes: `clean`, `slate`, `paper`, `terminal`.
 
+### `getThemeStyleTag(theme, scopeClass?)`
+
+Returns a complete `<style>` tag for server-side templates or static HTML generation.
+
+### `injectThemeCss(target, options?)`
+
+Injects or updates a scoped theme `<style>` tag in a browser document.
+
 ## Custom themes
 
 Presets are only a starting point. You can pass a custom theme object anywhere a preset name is accepted.
@@ -75,7 +99,7 @@ Presets are only a starting point. You can pass a custom theme object anywhere a
 Use `createTheme` when you want to keep a preset structure but override a few visual tokens.
 
 ```ts
-import { createTheme, getThemeCss, renderJsonToHtml } from 'json-html-kit';
+import { createTheme, getThemeStyleTag, renderJsonToHtml } from 'json-html-kit';
 
 const theme = createTheme(
   {
@@ -94,7 +118,7 @@ const theme = createTheme(
 );
 
 const html = `
-  <style>${getThemeCss(theme)}</style>
+  ${getThemeStyleTag(theme)}
   ${renderJsonToHtml(data, {
     theme,
     collapseDepth: 2,
