@@ -19,8 +19,6 @@ Modern TypeScript utilities for rendering arbitrary JSON as safe, themed, human-
 npm install json-html-kit
 ```
 
-The package is private while the API is being shaped. The name can still change before publication.
-
 ## Usage
 
 ```ts

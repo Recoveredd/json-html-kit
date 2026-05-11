@@ -5,6 +5,14 @@
   "type": "module",
   "license": "MIT",
   "author": "Recoveredd",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Recoveredd/json-html-kit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Recoveredd/json-html-kit/issues"
+  },
+  "homepage": "https://github.com/Recoveredd/json-html-kit#readme",
   "keywords": [
     "json",
     "html",
