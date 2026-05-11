@@ -1,5 +1,7 @@
 # json-html-kit
 
+[![CI](https://github.com/Recoveredd/json-html-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/Recoveredd/json-html-kit/actions/workflows/ci.yml)
+
 Modern TypeScript utilities for rendering arbitrary JSON as safe, themed, human-friendly HTML.
 
 `json-html-kit` is designed for reports, admin tools, demos, documentation pages and support dashboards where a raw JSON tree is too technical, but building a custom view is too slow.
