@@ -2,8 +2,8 @@ export {
   createJsonHtmlRenderer,
   renderJsonToElement,
   renderJsonToHtml
-} from './lib/render';
-export { createTheme, getThemeCss, getThemePreset, getThemeStyleTag, injectThemeCss, themes } from './lib/themes';
+} from './lib/render.js';
+export { createTheme, getThemeCss, getThemePreset, getThemeStyleTag, injectThemeCss, themes } from './lib/themes.js';
 export type {
   JsonHtmlRenderer,
   JsonHtmlRenderOptions,
@@ -13,4 +13,4 @@ export type {
   JsonHtmlThemeName,
   JsonHtmlThemeOverrides,
   JsonValue
-} from './lib/types';
+} from './lib/types.js';

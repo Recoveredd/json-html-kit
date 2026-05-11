@@ -40,9 +40,14 @@ export interface JsonHtmlRenderOptions extends JsonHtmlStyleOptions {
   tableMode?: JsonHtmlTableMode;
   collapseDepth?: number;
   maxDepth?: number;
+  maxArrayItems?: number;
+  maxObjectKeys?: number;
+  maxStringLength?: number;
+  tablePageSize?: number;
   sortKeys?: boolean;
   allowHtml?: boolean;
   emptyValueLabel?: string;
+  omittedItemsLabel?: string;
 }
 
 export interface JsonHtmlRenderer {

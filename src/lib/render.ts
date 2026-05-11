@@ -1,6 +1,6 @@
-import { escapeHtml, safeText } from './escape';
-import { getThemePreset, getThemeStyleTag, injectThemeCss } from './themes';
-import type { JsonHtmlRenderer, JsonHtmlRenderOptions, JsonValue } from './types';
+import { escapeHtml, safeText } from './escape.js';
+import { getThemePreset, getThemeStyleTag, injectThemeCss } from './themes.js';
+import type { JsonHtmlRenderer, JsonHtmlRenderOptions } from './types.js';
 
 type ResolvedRenderOptions = Required<Omit<JsonHtmlRenderOptions, 'className' | 'theme' | 'styleId' | 'includeThemeCss' | 'includeStyles'>> & {
   includeStyles: boolean;
@@ -12,9 +12,14 @@ const DEFAULT_OPTIONS: ResolvedRenderOptions = {
   tableMode: 'auto',
   collapseDepth: 2,
   maxDepth: 12,
+  maxArrayItems: Number.POSITIVE_INFINITY,
+  maxObjectKeys: Number.POSITIVE_INFINITY,
+  maxStringLength: Number.POSITIVE_INFINITY,
+  tablePageSize: Number.POSITIVE_INFINITY,
   sortKeys: false,
   allowHtml: false,
-  emptyValueLabel: 'Empty'
+  emptyValueLabel: 'Empty',
+  omittedItemsLabel: 'omitted'
 };
 
 export function renderJsonToHtml(value: unknown, options: JsonHtmlRenderOptions = {}): string {
@@ -26,7 +31,7 @@ export function renderJsonToHtml(value: unknown, options: JsonHtmlRenderOptions 
     options.className
   ].filter(Boolean).join(' ');
 
-  const body = renderValue(toJsonValue(value), settings, 0, 'root');
+  const body = renderValue(value, settings, 0, 'root');
   const style = settings.includeStyles ? getThemeStyleTag(theme, settings.scopeClass) : '';
 
   return `${style}<div class="${escapeHtml(classes)}"><div class="jhk-root">${body}</div></div>`;
@@ -67,12 +72,16 @@ function resolveRenderOptions(options: JsonHtmlRenderOptions): ResolvedRenderOpt
   return {
     ...DEFAULT_OPTIONS,
     ...options,
+    maxArrayItems: normalizeLimit(options.maxArrayItems, DEFAULT_OPTIONS.maxArrayItems),
+    maxObjectKeys: normalizeLimit(options.maxObjectKeys, DEFAULT_OPTIONS.maxObjectKeys),
+    maxStringLength: normalizeLimit(options.maxStringLength, DEFAULT_OPTIONS.maxStringLength),
+    tablePageSize: normalizeLimit(options.tablePageSize, DEFAULT_OPTIONS.tablePageSize),
     includeStyles: options.includeStyles ?? options.includeThemeCss ?? DEFAULT_OPTIONS.includeStyles
   };
 }
 
 function renderValue(
-  value: JsonValue,
+  value: unknown,
   options: ResolvedRenderOptions,
   depth: number,
   label: string
@@ -94,11 +103,11 @@ function renderValue(
   }
 
   const className = `jhk-primitive jhk-${typeof value}`;
-  return `<span class="${className}">${safeText(formatPrimitive(value), options.allowHtml)}</span>`;
+  return `<span class="${className}">${safeText(formatPrimitive(value, options), options.allowHtml)}</span>`;
 }
 
 function renderArray(
-  values: JsonValue[],
+  values: unknown[],
   options: ResolvedRenderOptions,
   depth: number,
   label: string
@@ -107,22 +116,24 @@ function renderArray(
     return `<span class="jhk-empty">${escapeHtml(options.emptyValueLabel)} array</span>`;
   }
 
-  if (shouldRenderTable(values, options.tableMode)) {
-    return renderArrayTable(values as Array<Record<string, JsonValue>>, options, depth);
+  if (shouldRenderTable(values, options)) {
+    return renderArrayTable(values as Array<Record<string, unknown>>, options, depth);
   }
 
-  const rows = values.map((item, index) => `
+  const visibleItems = values.slice(0, options.maxArrayItems);
+  const rows = visibleItems.map((item, index) => `
     <tr>
       <td class="jhk-key">${index}</td>
       <td class="jhk-value">${renderValue(item, options, depth + 1, `${label}.${index}`)}</td>
     </tr>
   `).join('');
+  const more = renderMoreRow(values.length - visibleItems.length, options, 2);
 
-  return wrapNested(`Array(${values.length})`, `<table><tbody>${rows}</tbody></table>`, options, depth);
+  return wrapNested(`Array(${values.length})`, `<table><tbody>${rows}${more}</tbody></table>`, options, depth);
 }
 
 function renderObject(
-  value: Record<string, JsonValue>,
+  value: object,
   options: ResolvedRenderOptions,
   depth: number,
   label: string
@@ -134,24 +145,29 @@ function renderObject(
   }
 
   const orderedKeys = options.sortKeys ? keys.sort((a, b) => a.localeCompare(b)) : keys;
-  const rows = orderedKeys.map((key) => `
+  const visibleKeys = orderedKeys.slice(0, options.maxObjectKeys);
+  const record = value as Record<string, unknown>;
+  const rows = visibleKeys.map((key) => `
     <tr>
       <td class="jhk-key">${escapeHtml(key)}</td>
-      <td class="jhk-value">${renderValue(value[key], options, depth + 1, `${label}.${key}`)}</td>
+      <td class="jhk-value">${renderValue(record[key], options, depth + 1, `${label}.${key}`)}</td>
     </tr>
   `).join('');
+  const more = renderMoreRow(keys.length - visibleKeys.length, options, 2);
 
-  return wrapNested(`Object(${keys.length})`, `<table><tbody>${rows}</tbody></table>`, options, depth);
+  return wrapNested(`Object(${keys.length})`, `<table><tbody>${rows}${more}</tbody></table>`, options, depth);
 }
 
 function renderArrayTable(
-  rows: Array<Record<string, JsonValue>>,
+  rows: Array<Record<string, unknown>>,
   options: ResolvedRenderOptions,
   depth: number
 ): string {
-  const headers = collectHeaders(rows, options.sortKeys);
+  const rowLimit = Math.min(options.maxArrayItems, options.tablePageSize);
+  const visibleRows = rows.slice(0, rowLimit);
+  const headers = collectHeaders(visibleRows, options.sortKeys);
   const head = headers.map((header) => `<th>${escapeHtml(header)}</th>`).join('');
-  const body = rows.map((row) => {
+  const body = visibleRows.map((row) => {
     const cells = headers.map((header) => {
       const cell = Object.hasOwn(row, header) ? row[header] : null;
       return `<td class="jhk-value">${renderValue(cell, options, depth + 1, header)}</td>`;
@@ -159,8 +175,9 @@ function renderArrayTable(
 
     return `<tr>${cells}</tr>`;
   }).join('');
+  const more = renderMoreRow(rows.length - visibleRows.length, options, Math.max(headers.length, 1));
 
-  return wrapNested(`Table(${rows.length} rows)`, `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`, options, depth);
+  return wrapNested(`Table(${rows.length} rows)`, `<table><thead><tr>${head}</tr></thead><tbody>${body}${more}</tbody></table>`, options, depth);
 }
 
 function wrapNested(
@@ -174,27 +191,30 @@ function wrapNested(
   return `<details${open}><summary>${escapeHtml(summary)}</summary><div class="jhk-nested">${content}</div></details>`;
 }
 
-function shouldRenderTable(values: JsonValue[], mode: string): boolean {
-  if (mode === 'never') {
+function shouldRenderTable(values: unknown[], options: ResolvedRenderOptions): boolean {
+  if (options.tableMode === 'never') {
     return false;
   }
 
-  if (!values.every(isPlainObject)) {
+  const sampleLimit = Math.min(values.length, options.maxArrayItems, options.tablePageSize, 50);
+  const sample = values.slice(0, sampleLimit);
+
+  if (sample.length === 0 || !sample.every(isPlainObject)) {
     return false;
   }
 
-  if (mode === 'always') {
+  if (options.tableMode === 'always') {
     return true;
   }
 
-  const rows = values as Array<Record<string, JsonValue>>;
+  const rows = sample as Array<Record<string, unknown>>;
   const scalarCells = rows.flatMap((row) => Object.values(row)).filter(isScalar).length;
   const totalCells = rows.reduce((count, row) => count + Object.keys(row).length, 0);
 
   return totalCells > 0 && scalarCells / totalCells >= 0.6;
 }
 
-function collectHeaders(rows: Array<Record<string, JsonValue>>, sortKeys: boolean): string[] {
+function collectHeaders(rows: Array<Record<string, unknown>>, sortKeys: boolean): string[] {
   const headers = new Set<string>();
 
   for (const row of rows) {
@@ -207,31 +227,51 @@ function collectHeaders(rows: Array<Record<string, JsonValue>>, sortKeys: boolea
   return sortKeys ? list.sort((a, b) => a.localeCompare(b)) : list;
 }
 
-function formatPrimitive(value: string | number | boolean): string {
-  return typeof value === 'string' ? value : String(value);
+function formatPrimitive(value: unknown, options: ResolvedRenderOptions): string {
+  if (typeof value !== 'string') {
+    return String(value);
+  }
+
+  if (value.length <= options.maxStringLength) {
+    return value;
+  }
+
+  const visible = value.slice(0, options.maxStringLength);
+  const omitted = value.length - visible.length;
+
+  return `${visible}… (${omitted} characters ${options.omittedItemsLabel})`;
 }
 
-function toJsonValue(value: unknown): JsonValue {
-  if (value === null || ['string', 'number', 'boolean'].includes(typeof value)) {
-    return value as JsonValue;
+function renderMoreRow(count: number, options: ResolvedRenderOptions, colspan: number): string {
+  if (count <= 0) {
+    return '';
   }
 
-  if (Array.isArray(value)) {
-    return value.map(toJsonValue);
-  }
-
-  if (typeof value === 'object') {
-    const entries = Object.entries(value as Record<string, unknown>).map(([key, nested]) => [key, toJsonValue(nested)]);
-    return Object.fromEntries(entries) as JsonValue;
-  }
-
-  return String(value);
+  return `
+    <tr class="jhk-more">
+      <td colspan="${colspan}">
+        ${count} ${count === 1 ? 'item' : 'items'} ${escapeHtml(options.omittedItemsLabel)}
+      </td>
+    </tr>
+  `;
 }
 
-function isPlainObject(value: JsonValue): value is Record<string, JsonValue> {
+function normalizeLimit(value: number | undefined, fallback: number): number {
+  if (value === undefined) {
+    return fallback;
+  }
+
+  if (!Number.isFinite(value)) {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  return Math.max(0, Math.floor(value));
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
 
-function isScalar(value: JsonValue): boolean {
+function isScalar(value: unknown): boolean {
   return value === null || ['string', 'number', 'boolean'].includes(typeof value);
 }

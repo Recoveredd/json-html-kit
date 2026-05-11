@@ -1,5 +1,5 @@
-import { escapeHtml } from './escape';
-import type { JsonHtmlStyleOptions, JsonHtmlTheme, JsonHtmlThemeName, JsonHtmlThemeOverrides } from './types';
+import { escapeHtml } from './escape.js';
+import type { JsonHtmlStyleOptions, JsonHtmlTheme, JsonHtmlThemeName, JsonHtmlThemeOverrides } from './types.js';
 
 const DEFAULT_SCOPE_CLASS = 'jhk';
 
@@ -164,6 +164,11 @@ ${scope} .jhk-null,
 ${scope} .jhk-empty {
   color: var(--jhk-muted);
   font-style: italic;
+}
+${scope} .jhk-more td {
+  color: var(--jhk-muted);
+  font-style: italic;
+  text-align: center;
 }
 ${scope} details {
   border: 1px solid var(--jhk-border);

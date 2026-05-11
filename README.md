@@ -67,6 +67,10 @@ renderJsonToHtml(data, {
   theme: 'slate',
   tableMode: 'auto',
   collapseDepth: 2,
+  maxArrayItems: 100,
+  maxObjectKeys: 100,
+  maxStringLength: 2000,
+  tablePageSize: 50,
   sortKeys: true,
   includeStyles: true
 });
@@ -150,6 +154,28 @@ const theme: JsonHtmlTheme = {
 ```
 
 The generated CSS is scoped by default to `.jhk`. Pass a second argument to `getThemeCss(theme, 'my-json-report')` when you need a custom scope class.
+
+## Large JSON
+
+`json-html-kit` renders static HTML. For huge API responses or log-like JSON, keep rendering bounded with limits:
+
+```ts
+const html = renderJsonToHtml(largePayload, {
+  maxArrayItems: 100,
+  maxObjectKeys: 100,
+  maxStringLength: 2000,
+  tablePageSize: 50
+});
+```
+
+These limits do not mutate your data. They only control how much HTML is generated:
+
+- `maxArrayItems` limits rendered items in regular arrays.
+- `maxObjectKeys` limits rendered keys in large objects.
+- `maxStringLength` truncates very long strings.
+- `tablePageSize` limits rendered rows when an array of objects is displayed as a table.
+
+When content is omitted, the renderer adds a summary row such as `124 items omitted`.
 
 ## Security
 

@@ -21,6 +21,44 @@ describe('renderJsonToHtml', () => {
     expect(html).toContain('Table(2 rows)');
   });
 
+  it('can limit large arrays', () => {
+    const html = renderJsonToHtml([1, 2, 3, 4], { maxArrayItems: 2 });
+
+    expect(html).toContain('Array(4)');
+    expect(html).toContain('2 items omitted');
+    expect(html).toContain('<td class="jhk-key">0</td>');
+    expect(html).not.toContain('<td class="jhk-key">3</td>');
+  });
+
+  it('can limit large object key sets', () => {
+    const html = renderJsonToHtml({ a: 1, b: 2, c: 3 }, { maxObjectKeys: 2 });
+
+    expect(html).toContain('Object(3)');
+    expect(html).toContain('1 item omitted');
+    expect(html).toContain('<td class="jhk-key">a</td>');
+    expect(html).not.toContain('<td class="jhk-key">c</td>');
+  });
+
+  it('can limit table rows separately from array size', () => {
+    const html = renderJsonToHtml([
+      { name: 'Ada', score: 98 },
+      { name: 'Grace', score: 99 },
+      { name: 'Katherine', score: 100 }
+    ], { tablePageSize: 2 });
+
+    expect(html).toContain('Table(3 rows)');
+    expect(html).toContain('1 item omitted');
+    expect(html).toContain('Grace');
+    expect(html).not.toContain('Katherine');
+  });
+
+  it('can truncate long strings', () => {
+    const html = renderJsonToHtml({ message: 'abcdefghij' }, { maxStringLength: 4 });
+
+    expect(html).toContain('abcd… (6 characters omitted)');
+    expect(html).not.toContain('abcdefghij');
+  });
+
   it('collapses nested structures after the configured depth', () => {
     const html = renderJsonToHtml({ a: { b: { c: true } } }, { collapseDepth: 1 });
 
