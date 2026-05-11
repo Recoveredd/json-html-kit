@@ -3,6 +3,7 @@
   "version": "0.4.1",
   "description": "Render arbitrary JSON as safe, themed, human-friendly HTML tables.",
   "type": "module",
+  "sideEffects": false,
   "license": "MIT",
   "author": "Recoveredd",
   "repository": {
@@ -35,6 +36,9 @@
   ],
   "publishConfig": {
     "access": "public"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "scripts": {
     "build": "npm run build:lib",

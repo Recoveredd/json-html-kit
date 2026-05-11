@@ -8,6 +8,14 @@ Modern TypeScript utilities for rendering arbitrary JSON as safe, themed, human-
 
 Demo: https://json-html-kit.wasta-wocket.fr/
 
+## Package quality
+
+- TypeScript types are generated from the source.
+- ESM-only package with no runtime dependencies.
+- Marked as side-effect free for bundlers.
+- Tested on Node.js 20 and 22 with GitHub Actions.
+- Designed to work without framework lock-in.
+
 ## Goals
 
 - Render unknown JSON into readable HTML without framework lock-in.
