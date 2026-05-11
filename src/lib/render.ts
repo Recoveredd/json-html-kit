@@ -1,6 +1,6 @@
 import { escapeHtml, safeText } from './escape.js';
 import { getThemePreset, getThemeStyleTag, injectThemeCss } from './themes.js';
-import type { JsonHtmlRenderer, JsonHtmlRenderOptions } from './types.js';
+import type { JsonHtmlRenderer, JsonHtmlRenderOptions, JsonHtmlViewer, JsonHtmlViewerOptions } from './types.js';
 
 type ResolvedRenderOptions = Required<Omit<JsonHtmlRenderOptions, 'className' | 'theme' | 'styleId' | 'includeThemeCss' | 'includeStyles'>> & {
   includeStyles: boolean;
@@ -66,6 +66,120 @@ export function createJsonHtmlRenderer(defaultOptions: JsonHtmlRenderOptions = {
       renderJsonToElement(value, element, { ...defaultOptions, ...options });
     }
   };
+}
+
+export function createJsonHtmlViewer(element: Element, value: unknown, options: JsonHtmlViewerOptions = {}): JsonHtmlViewer {
+  let data = value;
+  let page = normalizeLimit(options.initialPage, 0);
+  const pageSize = Math.max(1, normalizeLimit(options.pageSize ?? options.tablePageSize, 50));
+  const scopeClass = options.scopeClass ?? DEFAULT_OPTIONS.scopeClass;
+  const theme = getThemePreset(options.theme);
+
+  injectThemeCss(element.ownerDocument, {
+    theme,
+    scopeClass,
+    styleId: options.styleId
+  });
+
+  const handleClick = (event: Event) => {
+    const target = event.target;
+
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    const action = target.dataset.jhkAction;
+
+    if (action === 'previous') {
+      viewer.previousPage();
+    }
+
+    if (action === 'next') {
+      viewer.nextPage();
+    }
+  };
+
+  const render = () => {
+    const classes = [
+      scopeClass,
+      `jhk-theme-${theme.name}`,
+      'jhk-viewer',
+      options.className
+    ].filter(Boolean).join(' ');
+
+    if (!Array.isArray(data)) {
+      element.innerHTML = renderJsonToHtml(data, {
+        ...options,
+        includeStyles: false,
+        includeThemeCss: false,
+        scopeClass
+      });
+      return;
+    }
+
+    const totalPages = Math.max(1, Math.ceil(data.length / pageSize));
+    page = clamp(page, 0, totalPages - 1);
+
+    const start = page * pageSize;
+    const end = Math.min(start + pageSize, data.length);
+    const rangeStart = data.length === 0 ? 0 : start + 1;
+    const pageData = data.slice(start, end);
+    const pageHtml = renderJsonToHtml(pageData, {
+      ...options,
+      includeStyles: false,
+      includeThemeCss: false,
+      maxArrayItems: pageSize,
+      tablePageSize: pageSize,
+      scopeClass
+    });
+
+    element.innerHTML = `
+      <div class="${escapeHtml(classes)}">
+        <div class="jhk-viewer-controls">
+          <div class="jhk-viewer-meta">
+            Showing ${rangeStart}-${end} of ${data.length} items &middot; Page ${page + 1} of ${totalPages}
+          </div>
+          <div class="jhk-viewer-actions">
+            <button class="jhk-viewer-button" type="button" data-jhk-action="previous"${page === 0 ? ' disabled' : ''}>Previous</button>
+            <button class="jhk-viewer-button" type="button" data-jhk-action="next"${page >= totalPages - 1 ? ' disabled' : ''}>Next</button>
+          </div>
+        </div>
+        <div class="jhk-viewer-page">${pageHtml}</div>
+      </div>
+    `;
+  };
+
+  const viewer: JsonHtmlViewer = {
+    destroy() {
+      element.removeEventListener('click', handleClick);
+      element.innerHTML = '';
+    },
+    getPage() {
+      return page;
+    },
+    nextPage() {
+      viewer.setPage(page + 1);
+    },
+    previousPage() {
+      viewer.setPage(page - 1);
+    },
+    render,
+    setPage(nextPage: number) {
+      const totalPages = Array.isArray(data) ? Math.max(1, Math.ceil(data.length / pageSize)) : 1;
+      page = clamp(normalizeLimit(nextPage, 0), 0, totalPages - 1);
+      render();
+    },
+    update(nextValue: unknown) {
+      data = nextValue;
+      page = 0;
+      render();
+    }
+  };
+
+  element.addEventListener('click', handleClick);
+  render();
+
+  return viewer;
 }
 
 function resolveRenderOptions(options: JsonHtmlRenderOptions): ResolvedRenderOptions {
@@ -266,6 +380,10 @@ function normalizeLimit(value: number | undefined, fallback: number): number {
   }
 
   return Math.max(0, Math.floor(value));
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {

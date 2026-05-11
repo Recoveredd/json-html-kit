@@ -1,4 +1,5 @@
 export {
+  createJsonHtmlViewer,
   createJsonHtmlRenderer,
   renderJsonToElement,
   renderJsonToHtml
@@ -12,5 +13,7 @@ export type {
   JsonHtmlTheme,
   JsonHtmlThemeName,
   JsonHtmlThemeOverrides,
+  JsonHtmlViewer,
+  JsonHtmlViewerOptions,
   JsonValue
 } from './lib/types.js';

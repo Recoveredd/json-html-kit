@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createTheme, getThemeCss, getThemeStyleTag, renderJsonToHtml } from '../src';
+import { createJsonHtmlViewer, createTheme, getThemeCss, getThemeStyleTag, renderJsonToHtml } from '../src';
 
 describe('renderJsonToHtml', () => {
   it('escapes unsafe strings by default', () => {
@@ -112,5 +112,37 @@ describe('renderJsonToHtml', () => {
 
   it('throws a clear error for unknown theme names in JavaScript', () => {
     expect(() => getThemeCss('missing' as never)).toThrow('Unknown json-html-kit theme "missing"');
+  });
+});
+
+describe('createJsonHtmlViewer', () => {
+  it('paginates top-level arrays in the DOM', () => {
+    const element = document.createElement('div');
+    const viewer = createJsonHtmlViewer(element, [
+      { id: 1, name: 'Ada' },
+      { id: 2, name: 'Grace' },
+      { id: 3, name: 'Katherine' }
+    ], { pageSize: 2 });
+
+    expect(element.textContent).toContain('Showing 1-2 of 3 items');
+    expect(element.textContent).toContain('Ada');
+    expect(element.textContent).not.toContain('Katherine');
+
+    viewer.nextPage();
+
+    expect(viewer.getPage()).toBe(1);
+    expect(element.textContent).toContain('Showing 3-3 of 3 items');
+    expect(element.textContent).toContain('Katherine');
+
+    viewer.destroy();
+    expect(element.innerHTML).toBe('');
+  });
+
+  it('handles empty top-level arrays', () => {
+    const element = document.createElement('div');
+
+    createJsonHtmlViewer(element, [], { pageSize: 10 });
+
+    expect(element.textContent).toContain('Showing 0-0 of 0 items');
   });
 });

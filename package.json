@@ -1,6 +1,6 @@
 {
   "name": "json-html-kit",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Render arbitrary JSON as safe, themed, human-friendly HTML tables.",
   "type": "module",
   "license": "MIT",
@@ -44,6 +44,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
+    "happy-dom": "^20.9.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.8"
   }

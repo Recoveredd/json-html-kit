@@ -96,6 +96,25 @@ Returns a complete `<style>` tag for server-side templates or static HTML genera
 
 Injects or updates a scoped theme `<style>` tag in a browser document.
 
+### `createJsonHtmlViewer(element, value, options?)`
+
+Creates a small DOM viewer with optional top-level array pagination.
+
+```ts
+import { createJsonHtmlViewer } from 'json-html-kit';
+
+const viewer = createJsonHtmlViewer(container, hugeRows, {
+  theme: 'clean',
+  pageSize: 100
+});
+
+viewer.nextPage();
+viewer.setPage(10);
+viewer.destroy();
+```
+
+The viewer is intentionally separate from `renderJsonToHtml`. The renderer stays static and string-based; the viewer owns DOM state for pagination.
+
 ## Custom themes
 
 Presets are only a starting point. You can pass a custom theme object anywhere a preset name is accepted.
@@ -176,6 +195,14 @@ These limits do not mutate your data. They only control how much HTML is generat
 - `tablePageSize` limits rendered rows when an array of objects is displayed as a table.
 
 When content is omitted, the renderer adds a summary row such as `124 items omitted`.
+
+For full top-level array browsing, use the DOM viewer:
+
+```ts
+createJsonHtmlViewer(container, hugeRows, {
+  pageSize: 100
+});
+```
 
 ## Security
 

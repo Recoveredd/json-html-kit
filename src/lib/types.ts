@@ -54,3 +54,18 @@ export interface JsonHtmlRenderer {
   render(value: unknown, options?: JsonHtmlRenderOptions): string;
   renderToElement(value: unknown, element: Element, options?: JsonHtmlRenderOptions): void;
 }
+
+export interface JsonHtmlViewerOptions extends JsonHtmlRenderOptions {
+  pageSize?: number;
+  initialPage?: number;
+}
+
+export interface JsonHtmlViewer {
+  destroy(): void;
+  getPage(): number;
+  nextPage(): void;
+  previousPage(): void;
+  render(): void;
+  setPage(page: number): void;
+  update(value: unknown): void;
+}
