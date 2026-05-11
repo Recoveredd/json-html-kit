@@ -37,8 +37,7 @@
     "access": "public"
   },
   "scripts": {
-    "dev": "vite --host 127.0.0.1",
-    "build": "npm run build:lib && vite build",
+    "build": "npm run build:lib",
     "build:lib": "tsc -p tsconfig.build.json",
     "prepack": "npm run build:lib",
     "test": "vitest run",
@@ -46,7 +45,6 @@
   },
   "devDependencies": {
     "typescript": "^5.9.3",
-    "vite": "^7.1.12",
     "vitest": "^4.0.8"
   }
 }

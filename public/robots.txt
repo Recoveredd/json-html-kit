@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://json-html-kit.wasta-wocket.fr/sitemap.xml

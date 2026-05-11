@@ -4,6 +4,8 @@ Modern TypeScript utilities for rendering arbitrary JSON as safe, themed, human-
 
 `json-html-kit` is designed for reports, admin tools, demos, documentation pages and support dashboards where a raw JSON tree is too technical, but building a custom view is too slow.
 
+Demo: https://json-html-kit.wasta-wocket.fr/
+
 ## Goals
 
 - Render unknown JSON into readable HTML without framework lock-in.
@@ -128,12 +130,3 @@ The generated CSS is scoped by default to `.jhk`. Pass a second argument to `get
 ## Security
 
 String values and keys are escaped by default. Set `allowHtml: true` only for trusted content.
-
-## Demo
-
-```bash
-npm install
-npm run dev
-```
-
-Open the local URL and paste JSON to preview the rendered table/tree, switch themes, and copy the generated HTML.
