@@ -86,6 +86,18 @@ const html = renderJsonToHtml(rows, {
 });
 ```
 
+Inspect unknown JSON structure before rendering it:
+
+```ts
+import { getPathEntries } from 'object-key-paths';
+import { renderJsonToHtml } from 'json-html-kit';
+
+const html = renderJsonToHtml(getPathEntries(payload), {
+  theme: 'clean',
+  tableMode: 'auto'
+});
+```
+
 For report tables, use `array-table-kit` when you need Markdown or plain HTML table output instead of a nested JSON viewer.
 
 ## API
