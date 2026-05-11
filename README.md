@@ -56,6 +56,28 @@ if (container) {
 }
 ```
 
+## Ecosystem recipes
+
+`json-html-kit` works well as the final rendering step for data produced by small parsing utilities.
+
+Render terminal table output as browsable JSON:
+
+```ts
+import { renderJsonToHtml } from 'json-html-kit';
+import { parseTerminalTable } from 'terminal-table-kit';
+
+const rows = parseTerminalTable(psOutput, {
+  keyStyle: 'camel'
+});
+
+const html = renderJsonToHtml(rows, {
+  theme: 'clean',
+  tableMode: 'auto'
+});
+```
+
+For report tables, use `array-table-kit` when you need Markdown or plain HTML table output instead of a nested JSON viewer.
+
 ## API
 
 ### `renderJsonToHtml(value, options?)`
