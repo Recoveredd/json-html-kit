@@ -1,0 +1,44 @@
+{
+  "name": "json-html-kit",
+  "version": "0.1.0",
+  "description": "Render arbitrary JSON as safe, themed, human-friendly HTML tables.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Recoveredd",
+  "keywords": [
+    "json",
+    "html",
+    "table",
+    "renderer",
+    "viewer",
+    "typescript"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "npm run build:lib && vite build",
+    "build:lib": "tsc -p tsconfig.build.json",
+    "prepack": "npm run build:lib",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vite": "^7.1.12",
+    "vitest": "^4.0.8"
+  }
+}
