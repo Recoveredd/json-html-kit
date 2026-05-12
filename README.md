@@ -265,3 +265,7 @@ createJsonHtmlViewer(container, hugeRows, {
 ## Security
 
 String values and keys are escaped by default. Set `allowHtml: true` only for trusted content.
+
+## License
+
+MPL-2.0
