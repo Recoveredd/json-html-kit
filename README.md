@@ -1,12 +1,14 @@
 # json-html-kit
 
+[![npm version](https://img.shields.io/npm/v/json-html-kit.svg)](https://www.npmjs.com/package/json-html-kit)
+[![License: MPL-2.0](https://img.shields.io/badge/license-MPL--2.0-blue.svg)](LICENSE)
 [![CI](https://github.com/Recoveredd/json-html-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/Recoveredd/json-html-kit/actions/workflows/ci.yml)
 
 Modern TypeScript utilities for rendering arbitrary JSON as safe, themed, human-friendly HTML.
 
 `json-html-kit` is designed for reports, admin tools, demos, documentation pages and support dashboards where a raw JSON tree is too technical, but building a custom view is too slow.
 
-Demo: [packages.wasta-wocket.fr/json-html-kit/](https://packages.wasta-wocket.fr/json-html-kit/)
+Links: [Demo](https://packages.wasta-wocket.fr/json-html-kit/) · [npm](https://www.npmjs.com/package/json-html-kit) · [GitHub](https://github.com/Recoveredd/json-html-kit)
 
 ## Package quality
 
