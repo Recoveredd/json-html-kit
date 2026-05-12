@@ -60,9 +60,20 @@ export interface JsonHtmlViewerOptions extends JsonHtmlRenderOptions {
   initialPage?: number;
 }
 
+export interface JsonHtmlViewerPageInfo {
+  page: number;
+  pageCount: number;
+  pageSize: number;
+  totalItems: number;
+  startIndex: number;
+  endIndex: number;
+}
+
 export interface JsonHtmlViewer {
   destroy(): void;
   getPage(): number;
+  getPageCount(): number;
+  getPageInfo(): JsonHtmlViewerPageInfo;
   nextPage(): void;
   previousPage(): void;
   render(): void;

@@ -167,11 +167,13 @@ const viewer = createJsonHtmlViewer(container, hugeRows, {
 });
 
 viewer.nextPage();
+viewer.getPageInfo();
 viewer.setPage(10);
 viewer.destroy();
 ```
 
 The viewer is intentionally separate from `renderJsonToHtml`. The renderer stays static and string-based; the viewer owns DOM state for pagination.
+Use `getPageInfo()` or `getPageCount()` when your UI needs to render its own pagination controls.
 
 ## Custom themes
 

@@ -1,6 +1,6 @@
 {
   "name": "json-html-kit",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Render arbitrary JSON as safe, themed, human-friendly HTML tables.",
   "type": "module",
   "sideEffects": false,

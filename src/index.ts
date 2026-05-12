@@ -7,6 +7,7 @@ export {
 export { createTheme, getThemeCss, getThemePreset, getThemeStyleTag, injectThemeCss, themes } from './lib/themes.js';
 export type {
   JsonHtmlRenderer,
+  JsonHtmlViewerPageInfo,
   JsonHtmlRenderOptions,
   JsonHtmlStyleOptions,
   JsonHtmlTableMode,

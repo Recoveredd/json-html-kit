@@ -157,6 +157,25 @@ export function createJsonHtmlViewer(element: Element, value: unknown, options: 
     getPage() {
       return page;
     },
+    getPageCount() {
+      return getViewerPageCount(data, pageSize);
+    },
+    getPageInfo() {
+      const totalItems = Array.isArray(data) ? data.length : 1;
+      const pageCount = getViewerPageCount(data, pageSize);
+      const clampedPage = clamp(page, 0, pageCount - 1);
+      const startIndex = Array.isArray(data) && totalItems > 0 ? clampedPage * pageSize : 0;
+      const endIndex = Array.isArray(data) ? Math.min(startIndex + pageSize, totalItems) : totalItems;
+
+      return {
+        page: clampedPage,
+        pageCount,
+        pageSize,
+        totalItems,
+        startIndex,
+        endIndex
+      };
+    },
     nextPage() {
       viewer.setPage(page + 1);
     },
@@ -180,6 +199,10 @@ export function createJsonHtmlViewer(element: Element, value: unknown, options: 
   render();
 
   return viewer;
+}
+
+function getViewerPageCount(data: unknown, pageSize: number): number {
+  return Array.isArray(data) ? Math.max(1, Math.ceil(data.length / pageSize)) : 1;
 }
 
 function resolveRenderOptions(options: JsonHtmlRenderOptions): ResolvedRenderOptions {

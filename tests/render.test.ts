@@ -131,6 +131,15 @@ describe('createJsonHtmlViewer', () => {
     viewer.nextPage();
 
     expect(viewer.getPage()).toBe(1);
+    expect(viewer.getPageCount()).toBe(2);
+    expect(viewer.getPageInfo()).toEqual({
+      page: 1,
+      pageCount: 2,
+      pageSize: 2,
+      totalItems: 3,
+      startIndex: 2,
+      endIndex: 3
+    });
     expect(element.textContent).toContain('Showing 3-3 of 3 items');
     expect(element.textContent).toContain('Katherine');
 
