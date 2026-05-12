@@ -6,7 +6,7 @@ Modern TypeScript utilities for rendering arbitrary JSON as safe, themed, human-
 
 `json-html-kit` is designed for reports, admin tools, demos, documentation pages and support dashboards where a raw JSON tree is too technical, but building a custom view is too slow.
 
-Demo: https://json-html-kit.wasta-wocket.fr/
+Demo: https://kits.wasta-wocket.fr/json-html-kit
 
 ## Package quality
 
