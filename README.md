@@ -100,6 +100,20 @@ const html = renderJsonToHtml(getPathEntries(payload), {
 
 For report tables, use `array-table-kit` when you need Markdown or plain HTML table output instead of a nested JSON viewer.
 
+For CSV exports from the same records, use `json-csv-kit`:
+
+```ts
+import { jsonToCsv } from 'json-csv-kit';
+import { renderJsonToHtml } from 'json-html-kit';
+
+const html = renderJsonToHtml(rows, {
+  theme: 'clean',
+  tableMode: 'auto'
+});
+
+const csv = jsonToCsv(rows);
+```
+
 ## API
 
 ### `renderJsonToHtml(value, options?)`
